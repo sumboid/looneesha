@@ -2,7 +2,11 @@ abstract class Fragment {
   def name: String
 }
 
-case class DF(name: String, define: Boolean = false) extends Fragment
+case class DF(name: String, define: Boolean = false) extends Fragment {
+  override def equals(other: Any) = {
+    other.isInstanceOf[DF] && this.name == other.asInstanceOf[DF].name
+  }
+}
 case class CF(name: String, in: List[DF], out: List[DF]) extends Fragment
 
 case class Graph(cfs: List[CF]) {
@@ -21,10 +25,10 @@ case class Graph(cfs: List[CF]) {
   def paths(in: List[DF], outs: List[DF]): List[Graph] = {
     var result: List[Graph] = Nil
 
-    def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains) match {
-      case Nil => result ::= Graph(_cfs)
-      case dfs => combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
-                              .foreach(ncfs => _paths(_cfs ::: ncfs, ncfs.flatMap(_.in)))
+    def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
+      case Nil => { println("here?"); result ::= Graph(_cfs) }
+      case dfs => { println(dfs); combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
+                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in))) }
     }
     outs.foreach(out => _paths(Nil, out :: Nil))
 

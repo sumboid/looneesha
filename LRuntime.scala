@@ -9,7 +9,12 @@ import java.io.FileReader
 
 class LRuntime(graph: Graph, input: List[DF], output: List[DF]) {
   def visualize = GV.create(graph).draw
-  //def visualize(path: Graph) = GV.create(graph, path).draw
+  def writeData = { 
+  	println("Graph: " + graph)
+  	println("Input: " + input)
+  	println("Output: " + output)
+  }
+  def writeSolution = println("Paths: " + graph.paths(input, output))
 }
 
 object LRuntime {
@@ -20,8 +25,7 @@ object LRuntime {
 		val out = QuestionParser.parse(input)
 
 		val graphs = specfiles.map(file => SpecParser.parse(new FileReader(file)))
-		val graph = Graph(graphs.flatMap(g => g.cfs))
-
+		val graph = Graph(graphs.flatMap(_.cfs))
 		new LRuntime(graph, in, out)
 	}
 }
