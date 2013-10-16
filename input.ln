@@ -1,4 +1,4 @@
-import "/home/yoba/looneesha/spec.ln"
+import "spec.ln"
 
 x = 0
 z = 0
