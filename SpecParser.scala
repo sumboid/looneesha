@@ -20,7 +20,7 @@ trait InputParser extends JavaTokenParsers {
     case name~"="~number => DF(name, true)
   }
   def question: Parser[DF] = name~"?" ^^ { case name~"?" => DF(name) }
-  def include: Parser[String] = "import"~stringLiteral ^^ { case "import"~s => s }
+  def include: Parser[String] = "import"~stringLiteral ^^ { case "import"~n => n.toList.filter(_ != '"').mkString }
   def name: Parser[String] = "[a-zA-Z_0-9]\\w*".r
 }
 
@@ -41,6 +41,7 @@ class AssignParser extends InputParser {
 object AssignParser extends AssignParser {
   def parse(source: String) = parseAll(program, source).get.filterNot(_.isEmpty).map(_.get)
 }
+
 
 class QuestionParser extends InputParser {
   def program = rep(_program)
