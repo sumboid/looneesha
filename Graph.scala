@@ -26,9 +26,9 @@ case class Graph(cfs: List[CF]) {
     var result: List[Graph] = Nil
 
     def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
-      case Nil => { println("here?"); result ::= Graph(_cfs) }
-      case dfs => { println(dfs); combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
-                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in))) }
+      case Nil => result ::= Graph(_cfs)
+      case dfs => combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
+                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in)))
     }
     outs.foreach(out => _paths(Nil, out :: Nil))
 
