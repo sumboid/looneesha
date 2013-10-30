@@ -1,7 +1,0 @@
-a  -> alpha gamma -> beta;
-d2 -> beta x      -> hz;
-f2 -> hz z        -> s;
-d1 -> beta z      -> hx;
-f1 -> hx x        -> s;
-g  -> x y z       -> s;
-b  -> x y z       -> p;

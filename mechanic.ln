@@ -1,9 +1,0 @@
-a0 -> v0 v1 t -> a;
-b0 -> v0 a t -> v1;
-c0 -> v0 v1 a -> t;
-d0 -> v1 a t -> v0;
-
-a1 -> u g -> a;
-b1 -> u a -> g;
-c1 -> g a -> u;
-
