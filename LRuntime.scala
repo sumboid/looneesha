@@ -6,15 +6,20 @@
  */
 
 import java.io.FileReader
+import akka.actor.Actor
 
-class LRuntime(graph: Graph, input: List[DF], output: List[DF]) {
-  def visualize = GV.create(graph).draw
+class LRuntime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
+  def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
   def writeData = { 
   	println("Graph: " + graph)
   	println("Input: " + input)
   	println("Output: " + output)
   }
   def writeSolution = println("Paths: " + graph.paths(input, output))
+
+ 	def receive = {
+ 		case _ => println("aha")
+ 	}
 }
 
 object LRuntime {

@@ -17,7 +17,7 @@ object SpecParser extends SpecParser {
 
 trait InputParser extends JavaTokenParsers {
   def assign: Parser[DF] = name~"="~floatingPointNumber ^^ {
-    case name~"="~number => DF(name, true)
+    case name~"="~number => DF(name)
   }
   def question: Parser[DF] = name~"?" ^^ { case name~"?" => DF(name) }
   def include: Parser[String] = "import"~stringLiteral ^^ { case "import"~n => n.toList.filter(_ != '"').mkString }
