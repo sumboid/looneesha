@@ -1,3 +1,4 @@
+package looneesha
 import sys.process._
 
 case class GV(highlight: List[(Fragment, String)],

@@ -1,3 +1,5 @@
+package looneesha
+
 abstract class Fragment {
   def name: String
 }

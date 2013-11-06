@@ -1,9 +1,13 @@
+package looneesha
+
+object Test extends GraphBuilder {
+	defn a in ("x") -> out ("y")
+	defn b in ("x", "t") -> out ("y")
+	defn c in ("y", "p") -> out ("f") 
+}
+
 object Main {
   def main(args: Array[String]): Unit = {
-    val runtime = LRuntime("input.ln")
-
-    runtime.writeData
-    runtime.writeSolution
-    runtime.visualize
+    GV create (Test.get) draw
   }
 }
