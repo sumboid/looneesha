@@ -1,17 +1,10 @@
 package looneesha
 
-/*
- * Get input file with imports, assigns and questions
- * Parse imports, create graphs
- * Parse assigns and questions, then time to execute program: find paths and start async execution.
- */
+import scala.actors.Actor 
 
-import java.io.FileReader
-import akka.actor.Actor
-import java.lang.reflect.Method
-import java.lang.Class
+class Runtime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
+	var actors: List[Actor] = Nil
 
-class LRuntime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
   def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
   def writeData = { 
   	println("Graph: " + graph)
@@ -20,38 +13,56 @@ class LRuntime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
   }
   def writeSolution = println("Paths: " + graph.paths(input, output))
 
- 	def receive = {
- 		case _ => println("aha")
+ 	def act = {
+ 		for(i <- 1 to output.size) {
+ 			react {
+ 				case df: DF => println("Look! " + df.name + " = " + df.value)
+ 				case _ => println("ugh?") 
+ 			}
+ 		}
  	}
 
- 	def getCF(c: String, m: String) = Class.forName(c).getMethod(m)
+ 	override def start: Unit = {
+ 		super.start
+ 		val paths = graph.paths(input, output)
+ 		paths foreach initComputation
+ 	}
+
+ 	def initComputation(g: Graph) = {
+ 		
+ 		def getlink(dfs: List[DF]) = g.filterIn(dfs) match {
+ 				case Nil => dfs map (df => df -> this)
+ 				case cfs => dfs flatMap (df => cfs filter (cf => cf.in contains df) map (cf => df -> cf)) 
+ 			}
+
+ 		def _initComputation(cfs: List[CF]) = {
+ 			cfs.foreach(actors ::= CFRuntime(_, getlink(_.out))) 
+ 			_initComputation(g.filterOut(cfs.in))
+ 		}
+
+ 		_initComputation(g.filterOut(out :: Nil))
+ 	}
+
+
 }
 
-object LRuntime {
-	def apply(file: String) = {
-		val input = scala.io.Source.fromFile(file).getLines.mkString
-		val specfiles = IncludeParser.parse(input)
-		val in = AssignParser.parse(input)
-		val out = QuestionParser.parse(input)
-
-		val graphs = specfiles.map(file => SpecParser.parse(new FileReader(file)))
-		val graph = Graph(graphs.flatMap(_.cfs))
-		new LRuntime(graph, in, out)
-	}
+object Runtime {
+	def apply(g: GraphBuilder, p: ProblemBuilder) = new Runtime(g.get, p.dfs, p.question)
 }
 
-class CFRuntime(c: Class[_], m: Method, input: Seq[DF], output: Seq[DF],
-							  link: List[(DF, CFRuntime)]) extends Actor {
-
-	var realInput: List[DF] = Nil // Need fixed size list. 
-	var realOutput: List[DF] = Nil 
-
-	def start = ??? //check some
-
-	def receive = {
-		case df: DF => //set realInput, check input complete, and wait or invoke and send. 
+case class CFRuntime(cf: CF, link: List[(DF, Actor)]) extends Actor {
+	def act = {
+		var input: List[DF] = cf.input
+		for(i <- 1 to input.size) {
+			react {
+				case df: DF => {
+					val index = input.indexOf(df)
+					input(index) = input(index).set(df.value)
+				}
+			}
+		}
+		val realcf = cf.set(input)
+		val result = realcf.run
+		result foreach (df => link filter (l => l._1 == df) foreach (l => l._2 ! df))
 	}
-
-	def invokeMethod = { realOutput = m.invoke(c, realInput).asInstanceOf[List[DF]] }
-	def sendAll = realOutput foreach (df => link filter (l => l._1 == df) map (l => l._2) foreach (cfr => cfr receive df))
 }

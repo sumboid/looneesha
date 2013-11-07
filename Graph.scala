@@ -8,9 +8,21 @@ case class DF(name: String, value: Double = 0, define: Boolean = false) extends 
   override def equals(other: Any) = {
     other.isInstanceOf[DF] && this.name == other.asInstanceOf[DF].name
   }
+
+  def set(v: Double) = DF(name, v, true)
 }
 
-case class CF(name: String, in: List[DF], out: List[DF]) extends Fragment
+case class CF(name: String, func: List[DF] => List[Double], in: List[DF], out: List[DF]) extends Fragment {
+  def run = {
+    if (in forall (df => df.define)) {
+      val resultDouble = func(in)
+      for(i <- 0 until out.size) yield out(i) set resultDouble(i)
+    }
+    Nil
+  }
+
+  def set(_in: List[DF]) = CF(name, func, _in, out)
+}
 
 case class Graph(cfs: List[CF]) {
   def combinations (mcfs: List[List[CF]]) = {
@@ -37,6 +49,21 @@ case class Graph(cfs: List[CF]) {
 
     result
   }
+
+  def paths(in: List[DF], out: DF): List[Graph] = {
+    var result: List[Graph] = Nil
+
+    def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
+      case Nil => result ::= Graph(_cfs)
+      case dfs => combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
+                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in)))
+    }
+    
+    _paths(Nil, out :: Nil))
+
+    result
+  }
+
 
   def subgraph(in: List[DF], out: List[DF]) = Graph(paths(in, out).flatMap(g => g.cfs))
 
