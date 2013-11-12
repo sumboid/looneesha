@@ -5,45 +5,49 @@ import scala.actors.Actor
 class Runtime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
 	var actors: List[Actor] = Nil
 
-  def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
-  def writeData = { 
-  	println("Graph: " + graph)
-  	println("Input: " + input)
-  	println("Output: " + output)
-  }
-  def writeSolution = println("Paths: " + graph.paths(input, output))
+	def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
+	def writeData = { 
+		println("Graph: " + graph)
+		println("Input: " + input)
+		println("Output: " + output)
+	}
+	def writeSolution = println("Paths: " + graph.paths(input, output))
 
- 	def act = {
- 		for(i <- 1 to output.size) {
- 			react {
- 				case df: DF => println("Look! " + df.name + " = " + df.value)
- 				case _ => println("ugh?") 
- 			}
- 		}
- 	}
+	def act = {
+		loop {
+			react {
+				case df: DF => println("Look! " + df.name + " = " + df.value)
+				case _ => println("ugh?") 
+			}
+		}
+	}
 
- 	override def start: Unit = {
- 		super.start
- 		val paths = graph.paths(input, output)
- 		paths foreach initComputation
- 	}
+	def init = {
+		output foreach (out => { 
+      initComputation(graph.paths(input, out)(0), out)
+    }) 
 
- 	def initComputation(g: Graph) = {
- 		
- 		def getlink(dfs: List[DF]) = g.filterIn(dfs) match {
- 				case Nil => dfs map (df => df -> this)
- 				case cfs => dfs flatMap (df => cfs filter (cf => cf.in contains df) map (cf => df -> cf)) 
- 			}
+    actors foreach (_.start)
+    input foreach (in => actors filter (_.asInstanceOf[CFRuntime].cf.in contains in) foreach (_ ! in)) 
+	}
 
- 		def _initComputation(cfs: List[CF]) = {
- 			cfs.foreach(actors ::= CFRuntime(_, getlink(_.out))) 
- 			_initComputation(g.filterOut(cfs.in))
- 		}
+	def initComputation(g: Graph, out: DF) = {
 
- 		_initComputation(g.filterOut(out :: Nil))
- 	}
+		def getlink(dfs: List[DF]) = g.specialFilterIn(dfs) match {
+			case Nil => dfs map (df => df -> this)
+			case cfs => dfs flatMap (df => actors filter (a => a.asInstanceOf[CFRuntime].cf.in contains df) map (a => df -> a))
+		}
 
+		def _initComputation(cfs: List[CF]): Unit = cfs match {
+			case Nil => { }
+			case _   => {
+				cfs foreach (cf => actors ::= CFRuntime(cf, getlink(cf.out)))
+				_initComputation(g.filterOut(cfs flatMap (_.in)))
+			}
+		} 
 
+		_initComputation(g.filterOut(out :: Nil))
+	}
 }
 
 object Runtime {
@@ -51,18 +55,28 @@ object Runtime {
 }
 
 case class CFRuntime(cf: CF, link: List[(DF, Actor)]) extends Actor {
+  println("Created actor for " + cf.name + " with folowing links: " + link)
+
 	def act = {
-		var input: List[DF] = cf.input
-		for(i <- 1 to input.size) {
+		var input = cf.in.toArray
+    println(cf.name + ": input size = " + input.size)
+		loop {
+      println(cf.name + ": waiting for next DF")
 			react {
 				case df: DF => {
+          println(cf.name + ": get new df: " + df.name)
 					val index = input.indexOf(df)
-					input(index) = input(index).set(df.value)
+					input update (index, df)
+          if (input forall (_.define)) {
+            println(cf.name + ": everything is done!")
+            val realcf = cf.set(input.toList)
+            val result = realcf.run
+            result foreach (df => link filter (l => l._1 == df) foreach (l => l._2 ! df))
+            exit()
+          }
 				}
 			}
 		}
-		val realcf = cf.set(input)
-		val result = realcf.run
-		result foreach (df => link filter (l => l._1 == df) foreach (l => l._2 ! df))
+
 	}
 }

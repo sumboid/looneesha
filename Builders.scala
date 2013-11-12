@@ -15,15 +15,14 @@ case class GraphBuilder(mapping: Map[String, List[DF] => List[Double]], prefix: 
 		} 
 	}
 
-	object in extends Dynamic {
-		def applyDynamic(f: String)(args: String*) = { args.toList map (name => if (name contains ":") DF(name) else DF(prefix + separator + name)) }
+	class io extends Dynamic {
+		def applyDynamic(f: String)(args: String*) = { args.toList map (name => if (name contains separator) DF(name) else DF(prefix + separator + name)) }
 	}
 
-	object out extends Dynamic {
-		def applyDynamic(f: String)(args: String*) = { args.toList map (name => DF(prefix + separator + name)) }
-	}
+	object in extends io
+	object out extends io
 
-	def get = Graph(cfs)
+	def get = Graph(cfs) 
 
 	def + (g: GraphBuilder) = { 
 		val r = new GraphBuilder(new HashMap[String, List[DF] => List[Double]], "no")

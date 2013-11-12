@@ -17,8 +17,7 @@ case class CF(name: String, func: List[DF] => List[Double], in: List[DF], out: L
     if (in forall (df => df.define)) {
       val resultDouble = func(in)
       for(i <- 0 until out.size) yield out(i) set resultDouble(i)
-    }
-    Nil
+    } else Nil
   }
 
   def set(_in: List[DF]) = CF(name, func, _in, out)
@@ -37,12 +36,12 @@ case class Graph(cfs: List[CF]) {
     result
   }
 
-  def paths(in: List[DF], outs: List[DF]): List[Graph] = {
+  def paths(in: List[DF], outs: List[DF]) = {
     var result: List[Graph] = Nil
 
     def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
-      case Nil => result ::= Graph(_cfs)
-      case dfs => combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
+    case Nil => result ::= Graph(_cfs)
+    case dfs => combinations(dfs map (df => filterOut(df :: Nil)))
                               .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in)))
     }
     outs.foreach(out => _paths(Nil, out :: Nil))
@@ -50,26 +49,15 @@ case class Graph(cfs: List[CF]) {
     result
   }
 
-  def paths(in: List[DF], out: DF): List[Graph] = {
-    var result: List[Graph] = Nil
-
-    def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
-      case Nil => result ::= Graph(_cfs)
-      case dfs => combinations(dfs.map(df => filterOut(cfs, df :: Nil)))
-                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in)))
-    }
-    
-    _paths(Nil, out :: Nil))
-
-    result
-  }
-
-
-  def subgraph(in: List[DF], out: List[DF]) = Graph(paths(in, out).flatMap(g => g.cfs))
+  def paths(in: List[DF], out: DF): List[Graph] = paths(in, out :: Nil)
+  def subgraph(in: List[DF], out: List[DF]) = Graph(paths(in, out) flatMap (_.cfs))
 
   def filterIn (cfs: List[CF], in: List[DF]) = cfs.filter(_.in forall (in contains _))
   def filterOut (cfs: List[CF], out: List[DF]) = cfs.filter(_.out forall (out contains _))
 
   def filterIn (in: List[DF]) = cfs.filter(_.in forall (in contains _))
   def filterOut (out: List[DF]) = cfs.filter(_.out forall (out contains _))
+
+  def specialContains (cf: CF, in: List[DF]) = (in filter (cf.in contains _)) != Nil
+  def specialFilterIn (in: List[DF]) = cfs filter (specialContains(_, in))
 }
