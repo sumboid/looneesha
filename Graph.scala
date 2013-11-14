@@ -21,6 +21,7 @@ case class CF(name: String, func: List[DF] => List[Double], in: List[DF], out: L
   }
 
   def set(_in: List[DF]) = CF(name, func, _in, out)
+  override def toString = name
 }
 
 case class Graph(cfs: List[CF]) {
@@ -39,15 +40,21 @@ case class Graph(cfs: List[CF]) {
   def paths(in: List[DF], outs: List[DF]) = {
     var result: List[Graph] = Nil
 
-    def _paths(_cfs: List[CF], _dfs: List[DF]): Unit = _dfs.filterNot(in contains _) match {
+    def hasLoop(_cfs: List[CF], _ncfs: List[CF]) = _ncfs flatMap (_.in) filter (_cfs flatMap (_.out) contains _) match {
+      case Nil => false
+      case _ => true
+    }
+
+    def _paths(_cfs: List[CF], _dfs: List[DF], _edfs: List[DF]): Unit = { _dfs.filterNot(_edfs contains _) match {
     case Nil => result ::= Graph(_cfs)
     case dfs => combinations(dfs map (df => filterOut(df :: Nil)))
-                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in)))
-    }
-    outs.foreach(out => _paths(Nil, out :: Nil))
+                              .filterNot(hasLoop(_cfs, _))
+                              .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in), dfs ::: _edfs))
+    }}
+    outs.foreach(out => _paths(Nil, out :: Nil, in))
 
     result
-  }
+  } 
 
   def paths(in: List[DF], out: DF): List[Graph] = paths(in, out :: Nil)
   def subgraph(in: List[DF], out: List[DF]) = Graph(paths(in, out) flatMap (_.cfs))
@@ -57,7 +64,7 @@ case class Graph(cfs: List[CF]) {
 
   def filterIn (in: List[DF]) = cfs.filter(_.in forall (in contains _))
   def filterOut (out: List[DF]) = cfs.filter(_.out forall (out contains _))
-
+  
   def specialContains (cf: CF, in: List[DF]) = (in filter (cf.in contains _)) != Nil
   def specialFilterIn (in: List[DF]) = cfs filter (specialContains(_, in))
 }

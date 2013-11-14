@@ -55,11 +55,9 @@ object Runtime {
 }
 
 case class CFRuntime(cf: CF, link: List[(DF, Actor)]) extends Actor {
-  println("Created actor for " + cf.name + " with folowing links: " + link)
-
+  println("Created actor for " + cf.name)
 	def act = {
 		var input = cf.in.toArray
-    println(cf.name + ": input size = " + input.size)
 		loop {
       println(cf.name + ": waiting for next DF")
 			react {

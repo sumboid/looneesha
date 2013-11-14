@@ -40,7 +40,7 @@ case class ProblemBuilder {
 	}
 
 	object defn extends Dynamic {
-		def applyDynamic(f: String)(v: Float) = { dfs ::= DF(f, v, true) }
+		def applyDynamic(f: String)(v: Double) = { dfs ::= DF(f, v, true) }
 	}
 }
 
