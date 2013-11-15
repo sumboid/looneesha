@@ -1,5 +1,4 @@
 package looneesha
-import scala.collection.immutable.HashMap
 
 object KinematicsDef extends CFDefinition {
   val mapping = Map("distance0" -> ((in: List[DF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
