@@ -1,3 +1,6 @@
+package looneesha
+package translator
+
 import java.io.FileReader
 import scala.util.parsing.combinator.RegexParsers
 
@@ -7,11 +10,12 @@ case class Package (name: String) {
 
 case class Func (in: List[Arg], out: List[Arg], body: Body) {
   override def toString = {
-    "(" + { for (i <- 0 until in.size - 1) yield in(i) + ": Double, " }.mkString + in(in.size - 1) + ": Double" + ") => {\n" + body + "}\n"
+    "(" + { for (i <- 0 until in.size - 1) yield in(i) + ": Double, " }.mkString + in(in.size - 1) + ": Double" + ")" +
+    " => {\n" + body + "}\n"
   }
 }
 
-case class Arg  (name: String) {
+case class Arg (name: String) {
   override def toString = name
 }
 
@@ -19,19 +23,18 @@ case class Body (text: String) {
   override def toString = text
 }
 
-object ProgramPrinter {
-  def apply(program: Map[Package, List[Func]]) = {
-    var result: String = ""
-
-    for (pack <- program) {
-      result += "package " + pack._1 + " {\n"
-      val funcs = pack._2
-      for(i <- 0 until funcs.size) {
-        result += "val func" + i + " = " + funcs(i)
-      }
-      result += "}\n\n"
+object GraphBuilderCreator {
+  def argtostr(args: List[Arg]) = { for (i <- 0 until args.size - 1) yield "\"%s\", ".format(args(i)) }.mkString + "\"%s\""
+  def apply(program: (Package, List[Func])) {
+    var result = ""
+    val (pack, funcs) = program
+    println(pack); println(funcs)
+    result += "object %s extends GraphBuilder(%sDef.mapping, \"%s\")".format(pack, pack, pack)
+    result += "{\n"
+    for(i <- 0 until funcs.size) {
+      result += "defn func" + i + " " + "in(%s) -> out(%s)\n".format(argtostr(funcs(i).in), argtostr(funcs(i).out))
     }
-
+    result += "}\n\n"
     result
   }
 }
@@ -59,6 +62,6 @@ object Main {
   def main (args: Array[String]): Unit = {
     val file = new FileReader(args(0))
     val program = Parser.parse(file)
-    println(ProgramPrinter(program))
+    program foreach (pack => println(GraphBuilderCreator(pack)))
   } 
 }
