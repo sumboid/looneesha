@@ -1,8 +1,0 @@
-import "spec.ln"
-
-x = 0
-z = 0
-alpha = 0
-gamma = 0
-
-s ?

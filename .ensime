@@ -1,0 +1,39 @@
+;; If your project contains a lot of files, it is advisable to enable (:disable-source-load-on-startup t)
+;; Otherwise Ensime might incur a massive lag at startup time
+;; See more information about that at http://aemoncannon.github.com/ensime/index.html
+
+(
+  :subprojects (
+    (
+      :name "looneesha"
+      :module-name "looneesha"
+      :depends-on-modules (
+      
+      )
+      :package "default"
+      :version "0.0.1"
+      :compile-deps (
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.3.jar"
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.3.jar"
+      )
+      :runtime-deps (
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.3.jar"
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.3.jar"
+      )
+      :test-deps (
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.3.jar"
+        "/home/yoba/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.10.3.jar"
+      )
+      :source-roots (
+        "/home/yoba/code/looneesha/src"
+        "/home/yoba/code/looneesha/src/main/java"
+        "/home/yoba/code/looneesha/target/scala-2.10/src_managed/main"
+        "/home/yoba/code/looneesha/src/test/scala"
+        "/home/yoba/code/looneesha/src/test/java"
+        "/home/yoba/code/looneesha/target/scala-2.10/src_managed/test"
+      )
+      :target "/home/yoba/code/looneesha/target/scala-2.10/classes"
+      :test-target "/home/yoba/code/looneesha/target/scala-2.10/test-classes"
+    )
+  )
+)
