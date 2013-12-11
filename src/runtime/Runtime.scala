@@ -23,10 +23,7 @@ class Runtime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
   }
 
   def init = {
-    output foreach (out => { 
-        initComputation(graph.paths(input, out)(0), out)
-      }) 
-
+    output foreach (out => initComputation(graph.paths(input, out)(0), out))
     actors foreach (_.start)
     input foreach (in => actors filter (_.asInstanceOf[CFRuntime].cf.in contains in) foreach (_ ! in)) 
   }
@@ -39,7 +36,7 @@ class Runtime(graph: Graph, input: List[DF], output: List[DF]) extends Actor {
     }
 
     def _initComputation(cfs: List[CF]): Unit = cfs match {
-      case Nil => { }
+      case Nil => ()
       case _   => {
         cfs foreach (cf => actors ::= CFRuntime(cf, getlink(cf.out)))
         _initComputation(g.filterOut(cfs flatMap (_.in)))
@@ -75,6 +72,5 @@ case class CFRuntime(cf: CF, link: List[(DF, Actor)]) extends Actor {
         }
       }
     }
-
   }
 }

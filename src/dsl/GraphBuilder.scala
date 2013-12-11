@@ -55,17 +55,3 @@ case class GraphBuilder(mapping: Map[String, List[DF] => List[Double]],
     r
   }
 }
-
-case class ProblemBuilder {
-  var dfs: List[DF] = Nil
-  var question: List[DF] = Nil
-
-  object quest extends Dynamic {
-    def selectDynamic(f: String) = { question ::= DF(f) }
-  }
-
-  object defn extends Dynamic {
-    def applyDynamic(f: String)(v: Double) = { dfs ::= DF(f, v, true) }
-  }
-}
-
