@@ -27,12 +27,14 @@ case class GraphBuilder(mapping: Map[String, List[DF] => List[Double]],
 
   // AtomDF
   object % extends Dynamic {
-    def selectDynamic(name: String) = name contains separator match {
-      case true  => AtomDF(name)
-      case false => AtomDF(prefix + separator + name)
+    def fixname(name: String) = name contains separator match {
+      true => name
+      false => prefix + separator + name
     }
 
-    def applyDynamic(name: String)(id: String) = selectDynamic(name)
+    def selectDynamic(name: String) = AtomDF(fixname(name))
+    def applyDynamic(name: String)(ind: String) = MetaDF(fixname(name))
+    def applyDynamic(name: String)(ind: Int) = AtomDF(fixname(name), ind)
   }
 
   object * extends Dynamic {
