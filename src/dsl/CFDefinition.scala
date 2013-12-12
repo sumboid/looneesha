@@ -1,8 +1,8 @@
 package looneesha
 
 trait CFDefinition {
-  def mapping: Map[String, List[DF] => List[Double]]
+  def mapping: Map[String, List[AtomDF] => List[Double]]
   def apply = mapping
 
-  implicit def DFtoValue(df: DF) = df.value
+  implicit def AtomDFtoValue(df: AtomDF) = df.value
 }

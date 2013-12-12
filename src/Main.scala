@@ -1,30 +1,30 @@
 package looneesha
 
 object KinematicsDef extends CFDefinition {
-  override def mapping = Map("distance0" -> ((in: List[DF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
-                    "distance1" -> ((in: List[DF]) => (in(0) - in(1) * in(3) - in(2) * in(3) * in(3) / 2) :: Nil),
-                    "speed00" -> ((in: List[DF]) => (in(0) + in(1) * in(2)) :: Nil),
-                    "speed10" -> ((in: List[DF]) => (in(0) - in(1) * in(2)) :: Nil),
-                    "speed01" -> ((in: List[DF]) => ((in(1) - in(0)) / in(3) - in(2) * in(3) / 2) :: Nil),
-                    "deltaT0" -> ((in: List[DF]) => ((in(1) - in(0)) / in(2)) :: Nil),
-                    "accelerate0" -> ((in: List[DF]) => ((in(1) - in(0)) / in(2)) :: Nil),
-                    "accelerate1" -> ((in: List[DF]) => ((in(1) - in(0)) / in(3) / in(3) - in(2) / in(3)) :: Nil))
+  override def mapping = Map("distance0" -> ((in: List[AtomDF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
+    "distance1" -> ((in: List[AtomDF]) => (in(0) - in(1) * in(3) - in(2) * in(3) * in(3) / 2) :: Nil),
+    "speed00" -> ((in: List[AtomDF]) => (in(0) + in(1) * in(2)) :: Nil),
+    "speed10" -> ((in: List[AtomDF]) => (in(0) - in(1) * in(2)) :: Nil),
+    "speed01" -> ((in: List[AtomDF]) => ((in(1) - in(0)) / in(3) - in(2) * in(3) / 2) :: Nil),
+    "deltaT0" -> ((in: List[AtomDF]) => ((in(1) - in(0)) / in(2)) :: Nil),
+    "accelerate0" -> ((in: List[AtomDF]) => ((in(1) - in(0)) / in(2)) :: Nil),
+    "accelerate1" -> ((in: List[AtomDF]) => ((in(1) - in(0)) / in(3) / in(3) - in(2) / in(3)) :: Nil))
 }
 
 object MechanicsDef extends CFDefinition {
-  override def mapping = Map("frictionF" -> ((in: List[DF]) => (in(0) * in(1)) :: Nil),
-                             "reactionF" -> ((in: List[DF]) => -in(0) :: Nil),
-                             "gravitationFY" -> ((in: List[DF]) => (in(1) * 9.8 * math.cos(in(0))) :: Nil),
-                             "gravitationFX" -> ((in: List[DF]) => (in(1) * 9.8 * math.sin(in(0))) :: Nil),
-                             "overallF" -> ((in: List[DF]) => (in(0) + in(1)) :: Nil),
-                             "accelerate" -> ((in: List[DF]) => (in(0) / in(1)) :: Nil),
-                             "overallF0" -> ((in: List[DF]) => (in(0) * in(1)) :: Nil),
-                             "reactionF0" -> ((in: List[DF]) => (in(1) / in(0)) :: Nil),
-                             "coeffriction" -> ((in: List[DF]) => (in(1) / in(0)) :: Nil),
-                             "gravitationFY0" -> ((in: List[DF]) => (in(0)) :: Nil),
-                             "mass0" -> ((in: List[DF]) => (in(0) / in(1)) :: Nil),
-                             "frictionF0" -> ((in: List[DF]) => (in(0) - in(1)) :: Nil),
-                             "gravitaionFX0" -> ((in: List[DF]) => (in(0) - in(1)) :: Nil)) 
+  override def mapping = Map("frictionF" -> ((in: List[AtomDF]) => (in(0) * in(1)) :: Nil),
+    "reactionF" -> ((in: List[AtomDF]) => -in(0) :: Nil),
+    "gravitationFY" -> ((in: List[AtomDF]) => (in(1) * 9.8 * math.cos(in(0))) :: Nil),
+    "gravitationFX" -> ((in: List[AtomDF]) => (in(1) * 9.8 * math.sin(in(0))) :: Nil),
+    "overallF" -> ((in: List[AtomDF]) => (in(0) + in(1)) :: Nil),
+    "accelerate" -> ((in: List[AtomDF]) => (in(0) / in(1)) :: Nil),
+    "overallF0" -> ((in: List[AtomDF]) => (in(0) * in(1)) :: Nil),
+    "reactionF0" -> ((in: List[AtomDF]) => (in(1) / in(0)) :: Nil),
+    "coeffriction" -> ((in: List[AtomDF]) => (in(1) / in(0)) :: Nil),
+    "gravitationFY0" -> ((in: List[AtomDF]) => (in(0)) :: Nil),
+    "mass0" -> ((in: List[AtomDF]) => (in(0) / in(1)) :: Nil),
+    "frictionF0" -> ((in: List[AtomDF]) => (in(0) - in(1)) :: Nil),
+    "gravitaionFX0" -> ((in: List[AtomDF]) => (in(0) - in(1)) :: Nil)) 
 }
 
 object Kinematics extends GraphBuilder(KinematicsDef.mapping, "Kinematics") {
@@ -77,11 +77,10 @@ object MechanicsProblem extends ProblemBuilder {
 
 object Main {
   def main(args: Array[String]): Unit = {
-  	val runtime = Runtime(Kinematics + Mechanics, MechanicsProblem)
-  	runtime.writeSolution
+    val runtime = Runtime(Kinematics + Mechanics, MechanicsProblem)
+    runtime.writeSolution
     runtime.init
     runtime.start
-    runtime.visualize
-    //GV create (Mechanics + Kinematics get) draw
+    //runtime.visualize
   }
 }
