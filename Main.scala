@@ -1,7 +1,7 @@
 package looneesha
 
 object KinematicsDef extends CFDefinition {
-  val mapping = Map("distance0" -> ((in: List[DF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
+  def mapping = Map("distance0" -> ((in: List[DF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
                     "distance1" -> ((in: List[DF]) => (in(0) - in(1) * in(3) - in(2) * in(3) * in(3) / 2) :: Nil),
                     "speed00" -> ((in: List[DF]) => (in(0) + in(1) * in(2)) :: Nil),
                     "speed10" -> ((in: List[DF]) => (in(0) - in(1) * in(2)) :: Nil),
@@ -12,7 +12,7 @@ object KinematicsDef extends CFDefinition {
 }
 
 object MechanicsDef extends CFDefinition {
-	val mapping = Map("frictionF" -> ((in: List[DF]) => (in(0) * in(1)) :: Nil),
+	def mapping = Map("frictionF" -> ((in: List[DF]) => (in(0) * in(1)) :: Nil),
                     "reactionF" -> ((in: List[DF]) => -in(0) :: Nil),
                     "gravitationFY" -> ((in: List[DF]) => (in(1) * 9.8 * math.cos(in(0))) :: Nil),
                     "gravitationFX" -> ((in: List[DF]) => (in(1) * 9.8 * math.sin(in(0))) :: Nil),
