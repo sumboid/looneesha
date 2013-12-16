@@ -9,12 +9,16 @@ case class ProblemBuilder {
   var dfs: List[AtomDF] = Nil
   var question: List[AtomDF] = Nil
 
-  object quest extends Dynamic {
-    def selectDynamic(f: String) = { question ::= AtomDF(f) }
+  object define {
+    def apply(y: (AtomDF, Double)) = { dfs ::= y._1.set(y._2) }
   }
 
-  object defn extends Dynamic {
-    def applyDynamic(f: String)(v: Double) = { dfs ::= AtomDF(f, 0, v, true) }
+  object question {
+    def apply(df: AtomDF) = { question ::= df }
+  }
+
+  object % extends Dynamic {
+    def selectDynamic(name: String) = AtomDF(name)
+    def applyDynamic(name: String)(ind: Int) = AtomDF(name, ind)
   }
 }
-

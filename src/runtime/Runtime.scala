@@ -35,20 +35,20 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
   def init = {
     output foreach (out => initComputation(graph.paths(input, out)(0), out))
     actors foreach (_.start)
-    input foreach (in => actors filter (_.asInstanceOf[CFRuntime].cf.in contains in) foreach (_ ! in)) 
+    input foreach (in => actors filter (_.asInstanceOf[AtomCFRuntime].cf.in contains in) foreach (_ ! in)) 
   }
 
   def initComputation(g: Graph, out: AtomDF) = {
 
     def getlink(dfs: List[AtomDF]) = g.specialFilterIn(dfs) match {
       case Nil => dfs map (df => df -> this)
-      case cfs => dfs flatMap (df => actors filter (a => a.asInstanceOf[CFRuntime].cf.in contains df) map (a => df -> a))
+      case cfs => dfs flatMap (df => actors filter (a => a.asInstanceOf[AtomCFRuntime].cf.in contains df) map (a => df -> a))
     }
 
     def _initComputation(cfs: List[CF]): Unit = cfs match {
       case Nil => ()
       case _   => {
-        cfs foreach (cf => actors ::= CFRuntime(cf, getlink(cf.out)))
+        cfs foreach (cf => actors ::= AtomCFRuntime(cf, getlink(cf.out)))
         _initComputation(g.filterOut(cfs flatMap (_.in)))
       }
     } 
@@ -61,7 +61,7 @@ object Runtime {
   def apply(g: GraphBuilder, p: ProblemBuilder) = new Runtime(g.get, p.dfs, p.question)
 }
 
-case class CFRuntime(cf: CF, link: List[(AtomDF, Actor)]) extends Actor {
+case class AtomCFRuntime(cf: AtomCF, link: List[(AtomDF, Actor)]) extends Actor {
   private[this] var input = cf.in.toArray
 
   def defineDF(df: AtomDF) = {
@@ -87,3 +87,7 @@ case class CFRuntime(cf: CF, link: List[(AtomDF, Actor)]) extends Actor {
     }
   }
 }
+
+case class MetaCFRuntime(cf: MetaCF, link: List[(AtomDF, Actor)]) extends Actor {
+}
+

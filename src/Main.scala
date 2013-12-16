@@ -62,17 +62,16 @@ object Mechanics extends GraphBuilder(MechanicsDef.mapping, "Mechanics") {
 }
 
 object MechanicsProblem extends ProblemBuilder {
-  defn Kinematics_v0 10
-  defn Kinematics_v1 0
-  defn Kinematics_s0 0
+  define %Kinematics_v0 -> 10
+  define %Kinematics_v1 -> 0
+  define %Kinematics_s0 -> 0
 
-  defn Mechanics_m 10
-  defn Mechanics_cf 0.02
-  defn Mechanics_alpha 0
+  define %Mechanics_m -> 10
+  define %Mechanics_cf -> 0.02
+  define %Mechanics_alpha -> 0
 
-  quest Kinematics_s1
-
-  quest Kinematics_dt
+  question %Kinematics_s1
+  question %Kinematics_dt
 }
 
 object Main {
