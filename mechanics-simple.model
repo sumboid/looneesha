@@ -1,4 +1,4 @@
-package looneesha
+import looneesha._
 
 object KinematicsDef extends CFDefinition {
   override def mapping = Map("distance0" -> ((in: List[AtomDF]) => (in(0) + in(1) * in(3) + in(2) * in(3) * in(3) / 2) :: Nil),
@@ -74,12 +74,7 @@ object MechanicsProblem extends ProblemBuilder {
   question %Kinematics_dt
 }
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val runtime = Runtime(Kinematics + Mechanics, MechanicsProblem)
-    runtime.writeSolution
-    runtime.init
-    runtime.start
-    //runtime.visualize
-  }
-}
+val runtime = Runtime(Kinematics + Mechanics, MechanicsProblem)
+runtime.init
+runtime.start
+//runtime.visualize
