@@ -10,15 +10,20 @@ case class GraphBuilder(mapping: Map[String, List[AtomDF] => List[Double]],
                         separator: String = "_") {
 
   var cfs: List[CF] = Nil
+  def addprefix(name: String) = prefix + separator + name
+
   object defn extends Dynamic {
-    def applyDynamic(m: String)(args: => (List[AtomDF], List[AtomDF])) = {
+    def applyDynamic(m: String)(args: => (List[DF], List[DF])) = {
       val (in, out) = args
-      cfs ::= CF(prefix + separator + m, mapping(m), in, out)
+      (in ::: out) forall (_.isInstanceOf[AtomDF]) match {
+        case true => cfs ::= AtomCF(addprefix(m), mapping(m), in.asInstanceOf[List[AtomDF]], out.asInstanceOf[List[AtomDF]])
+        case false => cfs ::= MetaCF(addprefix(m), mapping(m), in, out)
+      }
     }
   }
 
   class io extends Dynamic {
-    def applyDynamic(f: String)(args: AtomDF*) = args.toList
+    def applyDynamic(f: String)(args: DF*) = args.toList
   }
 
   object in extends io
@@ -27,25 +32,21 @@ case class GraphBuilder(mapping: Map[String, List[AtomDF] => List[Double]],
   object % extends Dynamic {
     def fixname(name: String) = name contains separator match {
       case true => name
-      case false => prefix + separator + name
+      case false => addprefix(name)
     }
 
     def selectDynamic(name: String) = AtomDF(fixname(name))
-    def applyDynamic(name: String)(ind: String) = MetaDF(fixname(name))
-    def applyDynamic(name: String)(ind: Int) = AtomDF(fixname(name), ind)
+    def applyDynamic(name: String)(ind: MetaIndex) = MetaDF(fixname(name), ind.i)
+    //def applyDynamic(name: String)(ind: Int) = AtomDF(fixname(name), ind)
   }
 
-  //object * extends Dynamic {
-  //  def selectDynamic(name: String) = name
-  //}
+  case class MetaIndex(i: Int)
 
-  //object FOR {
-  //  def apply (range: (Counter, Counter)) (_cfs: () => List[CF]) = cfs ::= For(range, _cfs)
-  //}
-
-  //object IF {
-  //  def apply (cond: CF) = If(cond, cond.in, cond.out)
-  //}
+  object * {
+    def apply = MetaIndex(0)
+    def + (i: Int) = MetaIndex(i)
+    def - (i: Int) = MetaIndex(-i)
+  }
 
   def get = Graph(cfs)
 
