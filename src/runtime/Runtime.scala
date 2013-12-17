@@ -25,7 +25,7 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
   def act = loop {
     react {
       case df: AtomDF => {
-        println("Look! " + df.name + " = " + df.value)
+        println("Look! " + df + " = " + df.value)
         defineDF(df)
         if(end) exit
       }
@@ -45,15 +45,15 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
       case cfs => dfs flatMap (df => actors filter (a => a.asInstanceOf[AtomCFRuntime].cf.in contains df) map (a => df -> a))
     }
 
-    def _initComputation(cfs: List[CF]): Unit = cfs match {
+    def _initComputation(cfs: List[AtomCF]): Unit = cfs match {
       case Nil => ()
       case _   => {
         cfs foreach (cf => actors ::= AtomCFRuntime(cf, getlink(cf.out)))
-        _initComputation(g.filterOut(cfs flatMap (_.in)))
+        _initComputation(g.filterOut(cfs flatMap (_.in)).asInstanceOf[List[AtomCF]])
       }
     } 
 
-    _initComputation(g.filterOut(out :: Nil))
+    _initComputation(g.filterOut(out :: Nil).asInstanceOf[List[AtomCF]])
   }
 }
 
@@ -87,7 +87,3 @@ case class AtomCFRuntime(cf: AtomCF, link: List[(AtomDF, Actor)]) extends Actor 
     }
   }
 }
-
-case class MetaCFRuntime(cf: MetaCF, link: List[(AtomDF, Actor)]) extends Actor {
-}
-

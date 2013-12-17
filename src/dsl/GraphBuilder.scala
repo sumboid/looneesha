@@ -13,27 +13,17 @@ case class GraphBuilder(mapping: Map[String, List[AtomDF] => List[Double]],
   def addprefix(name: String) = prefix + separator + name
 
   object defn extends Dynamic {
-    def applyDynamic(m: String)(args: => (List[AtomDF], List[AtomDF])) = {
+    def applyDynamic(m: String)(args: => (List[DF], List[DF])) = {
       val (in, out) = args
-      cfs ::= AtomCF(addprefix(m), mapping(m), in, out)
-    }
-
-    /*def applyDynamic (m: String)(range: => (AtomDF, AtomDF))(args: => (List[DF], List[DF])) = {
-      val (in, out) = args
-      val (from, to) = range
-
-      cfs ::= MetaRangedСF(prefix(m), mapping(m), from, to, in, out)
-    }*/
-
-    def applyDynamic (m: String)(args: => (List[MetaDF], List[MetaDF])) = {
-      val (in, out) = args
-
-      cfs ::= MetaСF(addprefix(m), mapping(m), in, out)
+      (in ::: out) forall (_.isInstanceOf[AtomDF]) match {
+        case true => cfs ::= AtomCF(addprefix(m), mapping(m), in.asInstanceOf[List[AtomDF]], out.asInstanceOf[List[AtomDF]])
+        case false => cfs ::= MetaCF(addprefix(m), mapping(m), in, out)
+      }
     }
   }
 
   class io extends Dynamic {
-    def applyDynamic(f: String)(args: AtomDF*) = args.toList
+    def applyDynamic(f: String)(args: DF*) = args.toList
   }
 
   object in extends io
@@ -46,9 +36,8 @@ case class GraphBuilder(mapping: Map[String, List[AtomDF] => List[Double]],
     }
 
     def selectDynamic(name: String) = AtomDF(fixname(name))
-    def applyDynamic(name: String)(ind: MetaIndex) = MetaDF(fixname(name), ind)
-    def applyDynamic(name: String)(ind: Int) = AtomDF(fixname(name), ind)
-    implicit def metaToInt (m: MetaIndex) = m.i
+    def applyDynamic(name: String)(ind: MetaIndex) = MetaDF(fixname(name), ind.i)
+    //def applyDynamic(name: String)(ind: Int) = AtomDF(fixname(name), ind)
   }
 
   case class MetaIndex(i: Int)
