@@ -5,8 +5,9 @@ import scala.actors.Actor
 class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends Actor {
   var actors: List[Actor] = Nil
   var out = output.toArray
+  var cannotExec = false
 
-  //def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
+  def visualize = GV.create(graph, Graph(graph.paths(input, output).flatMap(_.cfs)), input, output).draw
   def writeData = {
     println("Graph: " + graph)
     println("Input: " + input)
@@ -22,23 +23,29 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
 
   def end = out forall (_.defined)
 
-  def act = loop {
-    react {
-      case df: AtomDF => {
-        println("Look! " + df + " = " + df.value)
-        defineDF(df)
-        if(end) exit
+  def act = {
+    if (cannotExec) exit
+    loop {
+      react {
+        case df: AtomDF => {
+          println("Look! " + df + " = " + df.value)
+          defineDF(df)
+          if(end) exit
+        }
       }
     }
   }
 
   def init = {
-    output foreach (out => initComputation(graph.paths(input, out)(0), out))
-    actors foreach (_.start)
-    input foreach (in => actors filter (_.asInstanceOf[AtomCFRuntime].cf.in contains in) foreach (_ ! in)) 
+    if (graph.paths(input, output) == Nil) { println ("No path"); cannotExec = true }
+    else {
+      initComputation(graph.paths(input, output)(0), output)
+      actors foreach (_.start)
+      input foreach (in => actors filter (_.asInstanceOf[AtomCFRuntime].cf.in contains in) foreach (_ ! in)) 
+    }
   }
 
-  def initComputation(g: Graph, out: AtomDF) = {
+  def initComputation(g: Graph, out: List[AtomDF]) = {
 
     def getlink(dfs: List[AtomDF]) = g.specialFilterIn(dfs) match {
       case Nil => dfs map (df => df -> this)
@@ -53,7 +60,7 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
       }
     } 
 
-    _initComputation(g.filterOut(out :: Nil).asInstanceOf[List[AtomCF]])
+    _initComputation(g.filterOut(out).asInstanceOf[List[AtomCF]])
   }
 }
 
@@ -70,10 +77,10 @@ case class AtomCFRuntime(cf: AtomCF, link: List[(AtomDF, Actor)]) extends Actor 
   }
 
   def tryRun = if (input forall (_.defined)) {
-      val realcf = cf.set(input.toList)
-      val result = realcf.run
-      result foreach (df => link filter (l => l._1 == df) foreach (l => l._2 ! df))
-      exit
+    val realcf = cf.set(input.toList)
+    val result = realcf.run
+    result foreach (df => link filter (l => l._1 == df) foreach (l => l._2 ! df))
+    exit
   }
 
   def defineAndTryRun(df: AtomDF) = {

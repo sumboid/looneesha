@@ -1,6 +1,6 @@
 package looneesha
 
-trait CF {
+trait CF extends Fragment {
   def name: String
   def in: List[DF]
   def out: List[DF]

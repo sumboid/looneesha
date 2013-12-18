@@ -1,6 +1,6 @@
 package looneesha
 
-trait DF {
+trait DF extends Fragment {
   def name:String
   override def equals(other: Any) = other match {
     case x: DF => this.name == x.name

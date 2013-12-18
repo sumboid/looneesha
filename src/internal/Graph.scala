@@ -17,26 +17,24 @@ case class Graph(cfs: List[CF]) {
     var result: List[Graph] = Nil
 
     def hasLoop(_cfs: List[CF], _ncfs: List[CF]) = _ncfs.flatMap(_.in)
-    .filter(_cfs.flatMap(_.out)
-      .contains(_)) match {
+    .filter(_cfs.flatMap(_.out).contains(_)) match {
       case Nil => false
       case _ => true
     }
 
     def unrollMetaCF(dfs: List[DF], cf: MetaCF) = dfs filter (cf.out contains _) map (cf.createAtomCF(_))
 
-    def _paths(_cfs: List[CF], _dfs: List[AtomDF], _edfs: List[AtomDF]): Unit = _dfs.filterNot(_edfs contains _) match {
+    def _paths(_cfs: List[CF], _dfs: List[AtomDF], _edfs: List[AtomDF]): Unit =  _dfs.filterNot(_edfs contains _) match {
       case Nil => result ::= Graph(_cfs)
-      case dfs => combinations(dfs map (df => filterOut(df)))
-      .map(cfs => cfs flatMap (cf => cf match
-        { case x: MetaCF => unrollMetaCF(dfs, x.asInstanceOf[MetaCF])
+      case dfs => combinations(dfs map (df => filterOut(df)) distinct)
+      .map(cfs => cfs flatMap (cf => cf match { 
+          case x: MetaCF => unrollMetaCF(dfs, x.asInstanceOf[MetaCF])
           case x: AtomCF => x.asInstanceOf[AtomCF] :: Nil}))
       .filterNot(hasLoop(_cfs, _))
       .foreach(ncfs => _paths(ncfs ::: _cfs, ncfs.flatMap(_.in), dfs ::: _edfs))
     }
 
-    outs.foreach(out => _paths(Nil, out :: Nil, in))
-
+    _paths(Nil, outs, in)
     result
   }
 
