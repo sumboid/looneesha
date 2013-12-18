@@ -37,15 +37,15 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
   }
 
   def init = {
-    if (graph.paths(input, output) == Nil) { println ("No path"); cannotExec = true }
-    else {
-      initComputation(graph.paths(input, output)(0), output)
+    if (output exists (graph.paths(input, _) == Nil)) { println ("No path"); cannotExec = true }
+      else {
+      output foreach (out => initComputation(graph.paths(input, out)(0), out))
       actors foreach (_.start)
       input foreach (in => actors filter (_.asInstanceOf[AtomCFRuntime].cf.in contains in) foreach (_ ! in)) 
     }
   }
 
-  def initComputation(g: Graph, out: List[AtomDF]) = {
+  def initComputation(g: Graph, out: AtomDF) = {
 
     def getlink(dfs: List[AtomDF]) = g.specialFilterIn(dfs) match {
       case Nil => dfs map (df => df -> this)
@@ -60,7 +60,7 @@ class Runtime(graph: Graph, input: List[AtomDF], output: List[AtomDF]) extends A
       }
     } 
 
-    _initComputation(g.filterOut(out).asInstanceOf[List[AtomCF]])
+    _initComputation(g.filterOut(out :: Nil).asInstanceOf[List[AtomCF]])
   }
 }
 

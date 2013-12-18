@@ -55,5 +55,6 @@ object MechanicsProblem extends ProblemBuilder {
 }
 
 val runtime = Runtime(Kinematics + Mechanics, MechanicsProblem)
+runtime.visualize
 runtime.init
 runtime.start

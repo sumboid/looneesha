@@ -20,6 +20,11 @@ case class AtomCF(name: String,
 
   def set(_in: List[AtomDF]) = AtomCF(name, func, _in, out)
   override def toString = name
+
+  override def equals(other: Any) = other match {
+    case x: AtomCF => x.name == name && x.func == func && x.in == in && x.out == out
+    case _ => false
+  }
 }
 
 case class MetaCF(name: String,
