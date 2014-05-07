@@ -12,5 +12,6 @@ object PureKinematicsProblem extends ProblemBuilder {
 }
 
 val runtime = Runtime(Kinematics, PureKinematicsProblem)
+runtime.visualize
 runtime.init
 runtime.start
